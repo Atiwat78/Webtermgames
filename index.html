@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เว็บเติมเกม</title>
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: #f2f2f2;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      color: #333;
+    }
+    .game-list {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 40px;
+    }
+    .game {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 150px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-decoration: none;
+      color: #000;
+      transition: 0.3s;
+    }
+    .game:hover {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>ยินดีต้อนรับสู่เว็บเติมเกม</h1>
+  <p>เลือกเกมที่ต้องการเติม</p>
+
+  <div class="game-list">
+    <a class="game" href="topup.php?game=freefire">Free Fire</a>
+    <a class="game" href="topup.php?game=rov">ROV</a>
+  </div>
+
+</body>
+</html>
