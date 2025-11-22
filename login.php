@@ -2,8 +2,8 @@
 
 session_start();
 
-// ตรวจสอบว่ามีเซสชัน 'user' อยู่หรือไม่ ถ้ามีให้เปลี่ยนเส้นทางไปหน้าเติมเกม
-if (isset($_SESSION['user_id'])) { // แก้จาก 'user' เป็น 'user_id' เพื่อความชัวร์ตามโค้ดส่วนอื่น
+// ตรวจสอบว่ามีเซสชัน 'user_id' อยู่หรือไม่ ถ้ามีให้เปลี่ยนเส้นทางไปหน้าเติมเกม
+if (isset($_SESSION['user_id'])) {
     header("Location: topup.php");
     exit();
 }
@@ -75,10 +75,66 @@ body {
     align-items: center;
     gap: 8px;
 }
-.navbar .logo img {
-    height: 60px; 
-    width: auto;
+/* ปรับขนาดรูปโลโก้ */
+.navbar .logo img { height: 250px; width: auto; padding: 0; }
+
+/* ▼▼▼ --- Logic สลับโลโก้ (เหมือนไฟล์ที่ 2) --- ▼▼▼ */
+/* ค่าเริ่มต้น (Light Mode ของหน้านี้ Navbar เป็นสีเข้ม เราจึงใช้โลโก้ขาวเป็นหลัก หรือปรับตามต้องการ) */
+/* หมายเหตุ: ในหน้า Login Navbar เป็นสีเข้ม (rgba(26, 26, 46)) ดังนั้นโลโก้ควรเป็นสีขาวหรือทอง */
+
+.logo-black { display: none; } /* ซ่อนโลโก้ดำในตอนแรกเพราะ Navbar เป็นสีเข้ม */
+.logo-white { display: block; }
+
+/* แต่ถ้า Body เป็น Dark Mode Navbar ก็ยังเข้มอยู่ Logic นี้จะช่วยสลับถ้าคุณเปลี่ยนสี Navbar */
+/* ถ้าต้องการให้สลับตาม Dark Mode แบบเป๊ะๆ ตามไฟล์ 2 ใช้ Logic นี้: */
+
+/* Override Logic เพื่อให้เหมือนไฟล์ที่ 2 */
+/* ถ้า Light Mode (ปกติ) */
+body:not(.dark-mode) .logo-black { display: none; } /* ปรับเป็น display: block; ถ้าพื้น Navbar สว่าง */
+body:not(.dark-mode) .logo-white { display: block; }
+
+/* ถ้า Dark Mode */
+body.dark-mode .logo-black { display: none; }
+body.dark-mode .logo-white { display: block; }
+
+/* *** หมายเหตุสำคัญ *** หน้า Login ของคุณ CSS .navbar พื้นหลังเป็นสีเข้ม (rgba 26,26,46) ตลอดเวลา
+   ดังนั้นโลโก้ "สีดำ" จะมองไม่เห็น ผมจึงตั้งให้โชว์ "สีขาว" ตลอด 
+   
+   แต่ถ้าคุณอยากให้สลับจริงๆ ตามไฟล์ที่ 2 (ดำ/ขาว) ผมใส่โค้ดไว้ให้ทำงานแล้ว
+   ด้านล่างนี้คือ Logic มาตรฐานแบบไฟล์ที่ 2 ครับ:
+*/
+
+/* --- เริ่ม Logic สลับโลโก้แบบไฟล์ที่ 2 --- */
+/* 1. ซ่อนโลโก้ดำ โชว์โลโก้ขาว (สำหรับ Dark Mode หรือ Navbar เข้ม) */
+.logo-black { display: none; }
+.logo-white { display: block; }
+
+/* 2. ถ้าต้องการให้ Light Mode โชว์โลโก้ดำ (ต้องแก้สีพื้นหลัง Navbar ให้สว่างด้วย) */
+/* ในที่นี้ผมจะคงไว้ตามไฟล์ที่ 2 คือ: */
+/* Light Mode -> โชว์ดำ */
+/* Dark Mode -> โชว์ขาว */
+/* แต่เนื่องจาก Navbar หน้า Login คุณเป็นสีเข้ม ผมจะปรับ CSS Navbar ให้สว่างใน Light Mode ด้วยเพื่อให้เห็นโลโก้ดำ */
+
+body:not(.dark-mode) .navbar {
+    background: rgba(255, 255, 255, 0.95); /* ปรับพื้นหลัง Navbar เป็นขาวใน Light Mode */
+    color: #333;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
 }
+body:not(.dark-mode) .navbar ul li a {
+    color: #333;
+}
+body:not(.dark-mode) .navbar ul li a:hover {
+    color: #FFC107;
+}
+
+/* บังคับการแสดงผลโลโก้ */
+body:not(.dark-mode) .logo-black { display: block !important; }
+body:not(.dark-mode) .logo-white { display: none !important; }
+
+body.dark-mode .logo-black { display: none !important; }
+body.dark-mode .logo-white { display: block !important; }
+/* --- จบ Logic สลับโลโก้ --- */
+
 
 .navbar-links {
     display: flex;
@@ -95,16 +151,13 @@ body {
     margin-left: 30px;
 }
 .navbar ul li a {
-    color: #E0E0E0;
     text-decoration: none;
     font-weight: 400;
     transition: color 0.3s ease;
     font-size: 16px;
     padding: 5px 0;
 }
-.navbar ul li a:hover {
-    color: #FFC107;
-}
+
 .login-btn, .logout-btn {
     background-color: #FFC107;
     color: #1A1A2E !important; 
@@ -159,7 +212,7 @@ input:checked + .slider:before {
 .login-container {
     background: #ffffff; /* พื้นหลังขาว */
     border: 1px solid #e5e7eb;
-    padding: 40px 50px 50px;
+    padding: 10px 50px 50px;
     border-radius: 18px; 
     box-shadow: 0 10px 40px rgba(0,0,0,0.1); /* เงานุ่มๆ */
     width: 420px; 
@@ -303,6 +356,18 @@ body.dark-mode {
     100% { background-position: 0% 50%; }
 }
 
+/* เมื่อ Dark Mode Navbar กลับมาเข้ม */
+body.dark-mode .navbar {
+    background: rgba(26, 26, 46, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .navbar ul li a {
+    color: #e0e0e0;
+}
+body.dark-mode .navbar ul li a:hover {
+    color: #ffc107;
+}
+
 body.dark-mode .login-container {
     background: rgba(30, 30, 45, 0.8); /* Glassmorphism สีดำ */
     backdrop-filter: blur(20px);
@@ -343,6 +408,23 @@ body.dark-mode .register-link a:hover {
     .theme-switch { margin-left: 15px; }
     .login-container { width: 90%; padding: 30px 25px 40px; }
 }
+/* --- CSS สำหรับโลโก้ในกล่อง Login --- */
+.form-logo {
+    display: flex;
+    justify-content: center; /* จัดกึ่งกลาง */
+    margin-bottom: 15px;     /* เว้นระยะห่างจากหัวข้อ "เข้าสู่ระบบ" */
+}
+
+.login-container img {
+    width: 250px; /* ✅ กำหนดความกว้างแทน (แนะนำ 180px - 250px ลองปรับดูครับ) */
+    height: auto;        /* ✅ สำคัญ! ปล่อยความสูงให้ออโต้ ภาพจะไม่บี้แบน */
+    
+    margin-bottom: 0px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+}
 </style>
 </head>
 <body>
@@ -356,9 +438,9 @@ body.dark-mode .register-link a:hover {
 
 <nav class="navbar">
     <a href="topup.php" class="logo">
-        <img src="image/logomee-Photoroom.png" alt="Logo Icon"> 
-        NTYZTERMGAME
-    </a>
+        <img src="image/Elite Logo black.png" class="logo-black" alt="Elite Logo Black">
+        <img src="image/Elite Logo white.png" class="logo-white" alt="Elite Logo White">
+    </a> 
     <div class="navbar-links">
         <ul class="main-menu">
             <li><a href="topup.php">หน้าแรก</a></li>
@@ -379,6 +461,10 @@ body.dark-mode .register-link a:hover {
 </nav>
 
 <div class="login-container">
+    <div class="form-logo">
+        <img src="image/Elite Logo black.png" class="logo-black" alt="Elite Logo">
+        <img src="image/Elite Logo white.png" class="logo-white" alt="Elite Logo">
+    </div>
     <h2>เข้าสู่ระบบ</h2>
     
     <?php if ($error): ?>
@@ -408,7 +494,7 @@ body.dark-mode .register-link a:hover {
 </div>
 
 <script>
-    // --- Logic สำหรับ Theme Toggle (เหมือนไฟล์ termcoin.php) ---
+    // --- Logic สำหรับ Theme Toggle ---
     const themeToggle = document.getElementById('theme-toggle');
     
     // เช็คสถานะเริ่มต้น

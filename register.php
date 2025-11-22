@@ -2,13 +2,14 @@
 
 session_start();
 
-if (isset($_SESSION['user'])) {
-    header("Location: topup.php?game=freefire");
+if (isset($_SESSION['user_id'])) { // แก้ check session ให้เหมือน login
+    header("Location: topup.php");
     exit();
 }
 
 $error = $_GET['error'] ?? '';
 $success = $_GET['success'] ?? ''; 
+
 ?>
 
 <!DOCTYPE html>
@@ -17,58 +18,40 @@ $success = $_GET['success'] ?? '';
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>สมัครสมาชิก | เติมเกม</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* --- THEME COLORS ---
- * Primary Accent: #FFC107 (Bright Gold/Amber)
- * Dark Accent: #FFA500 (Orange Gold)
- * Success: #27ae60
-*/
 
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
 /* Reset เบื้องต้น */
 * {
     box-sizing: border-box;
 }
 
-/* ▼▼▼ --- พื้นหลัง Gradient Animation (เหมือน Login) --- ▼▼▼ */
+/* ▼▼▼ --- CSS หลัก (Light Mode - ธีมขาว/ทอง) --- ▼▼▼ */
 body {
     font-family: 'Sarabun', sans-serif;
-    height: 100vh;
+    min-height: 100vh; /* ใช้ min-height เพื่อรองรับเนื้อหาที่ยาวกว่าหน้าจอ */
     margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 70px; 
+    padding-top: 90px; /* เพิ่มพื้นที่ด้านบนเล็กน้อยเพราะกล่องสมัครสมาชิกยาว */
+    padding-bottom: 50px;
     
-    /* --- พื้นหลัง Gradient Animation --- */
-    background: linear-gradient(-45deg, #1A1A2E, #283049, #1a1a2e, #1b263b); 
-    background-size: 400% 400%; 
-    animation: gradientShift 15s ease infinite; 
+    /* พื้นหลัง Light Mode */
+    background-color: #f4f7f6;
+    color: #333;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Keyframes สำหรับการเคลื่อนไหวของพื้นหลัง */
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-/* ▲▲▲ ----------------------------------------------------- ▲▲▲ */
-
-
-/* ▼▼▼ CSS Navbar (ปรับให้รองรับ Logo รูปภาพและใช้สีทอง) ▼▼▼ */
+/* ▼▼▼ --- Navbar --- ▼▼▼ */
 .navbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 70px;
-    background: rgba(25, 25, 30, 0.9); 
+    background: rgba(26, 26, 46, 0.95); 
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -77,52 +60,56 @@ body {
     align-items: center;
     padding: 0 50px;
     color: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
     z-index: 1000;
-    box-sizing: border-box;
 }
+
 .navbar .logo {
     font-size: 24px; 
     font-weight: 700;
-    color: #FFC107; /* <-- สีทอง */
+    color: #FFC107; 
     text-decoration: none;
     letter-spacing: 1px;
-    display: flex; 
+    display: flex;
     align-items: center;
-    gap: 8px; 
+    gap: 8px;
 }
-.navbar .logo img {
-    height: 60px; /* ขนาด Logo */
-    width: auto;
-}
+/* ปรับขนาดรูปโลโก้ใน Navbar */
+.navbar .logo img { height: 250px; width: auto; padding: 0; }
 
-.navbar-links {
-    display: flex;
-    align-items: center;
+/* ▼▼▼ --- Logic สลับโลโก้ --- ▼▼▼ */
+.logo-black { display: none; } 
+.logo-white { display: block; }
+
+/* Logic แสดงผลตามโหมด */
+body:not(.dark-mode) .logo-black { display: block !important; }
+body:not(.dark-mode) .logo-white { display: none !important; }
+
+body.dark-mode .logo-black { display: none !important; }
+body.dark-mode .logo-white { display: block !important; }
+
+body:not(.dark-mode) .navbar {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
 }
-.navbar ul {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-}
-.navbar ul li {
-    margin-left: 30px;
-}
+body:not(.dark-mode) .navbar ul li a { color: #333; }
+body:not(.dark-mode) .navbar ul li a:hover { color: #FFC107; }
+
+/* ▼▼▼ --- Components --- ▼▼▼ */
+.navbar-links { display: flex; align-items: center; }
+.navbar ul { list-style: none; display: flex; align-items: center; margin: 0; padding: 0; }
+.navbar ul li { margin-left: 30px; }
 .navbar ul li a {
-    color: #E0E0E0;
     text-decoration: none;
     font-weight: 400;
     transition: color 0.3s ease;
     font-size: 16px;
     padding: 5px 0;
 }
-.navbar ul li a:hover {
-    color: #FFC107; /* <-- สีทอง */
-}
+
 .login-btn, .logout-btn {
-    background-color: #FFC107; /* <-- สีทอง */
+    background-color: #FFC107;
     color: #1A1A2E !important; 
     border: none;
     padding: 8px 18px;
@@ -131,23 +118,36 @@ body {
     font-weight: 600;
 }
 .login-btn:hover, .logout-btn:hover {
-    background-color: #FFD740; /* <-- สีทองอ่อนลง */
+    background-color: #FFD740;
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
 }
-/* ▲▲▲ จบส่วน Navbar ▲▲▲ */
+
+/* Theme Switch */
+.theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; margin-left: 25px; }
+.theme-switch input { display: none; }
+.slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc; transition: .4s; border-radius: 34px;
+}
+.slider:before {
+    position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+    background-color: white; transition: .4s; border-radius: 50%;
+}
+input:checked + .slider { background-color: #FFC107; }
+input:checked + .slider:before { transform: translateX(24px); }
 
 
-/* --- กล่อง Register (Glassmorphism + สีทอง) --- */
-.register-container { 
-    background: rgba(30, 30, 45, 0.8);
-    backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 40px 50px 50px;
+/* ▼▼▼ --- กล่อง Register (ใช้สไตล์เดียวกับ Login) --- ▼▼▼ */
+.register-container {
+    background: #ffffff; /* พื้นหลังขาว */
+    border: 1px solid #e5e7eb;
+    /* จัด Padding ตามสูตร Logo สวย */
+    padding: 10px 50px 50px;
+    
     border-radius: 18px; 
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
-    width: 420px; /* กะทัดรัดขึ้น */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+    width: 450px; /* กว้างกว่า Login นิดหน่อยเพราะข้อมูลเยอะ */
     max-width: 90%;
     text-align: center;
     position: relative;
@@ -155,18 +155,13 @@ body {
     transition: all 0.3s ease;
 }
 
-/* เพิ่มเส้นตกแต่ง (สีทอง) */
+/* เส้นตกแต่งด้านบน */
 .register-container::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, transparent, #FFC107, transparent); /* <-- สีทอง */
+    position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, transparent, #FFC107, transparent);
     animation: border-animate 2s linear infinite;
 }
-
 @keyframes border-animate {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
@@ -174,156 +169,132 @@ body {
 
 h2 {
     margin-bottom: 30px;
-    color: #fff;
+    color: #1A1A2E; 
     font-weight: 700;
     font-size: 32px;
     letter-spacing: 1px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
     padding-bottom: 10px;
-}
-form {
-    padding-top: 10px;
+    transition: color 0.3s ease, border-color 0.3s ease;
 }
 
-/* --- Input (Sleek Glass - ใช้สีทองสำหรับ focus) --- */
+/* --- Input --- */
 input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
     width: 100%;
-    padding: 15px 20px; /* ปรับขนาดให้เท่ากับ Login */
-    margin: 10px 0 15px; 
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
+    padding: 15px 20px 15px 50px; 
+    margin: 10px 0 20px;
+    background: #f9fafb; 
+    border: 1px solid #d1d5db;
+    color: #333;
     border-radius: 8px;
     font-size: 16px;
-    font-weight: 300;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    transition: all 0.3s ease;
+    font-weight: 400;
 }
-input::placeholder {
-    color: #aaa;
-    opacity: 0.8;
-    font-weight: 300;
-}
-
-input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, input[type="tel"]:focus {
-    border-color: #FFC107; /* <-- สีทอง */
-    outline: none;
-    box-shadow: 0 0 12px rgba(255, 193, 7, 0.5); /* <-- เงาจากสีทอง */
-    background: rgba(255, 193, 7, 0.05); /* <-- พื้นหลังโฟกัสสีทองจางๆ */
+input::placeholder { color: #aaa; opacity: 0.8; font-weight: 300; }
+input:focus {
+    border-color: #FFC107; outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2); background: #fff;
 }
 
-/* --- ปุ่ม (สีทอง) --- */
 button {
-    background: #FFC107; /* <-- สีทอง */
-    color: #1A1A2E; /* ตัวอักษรสีเข้ม */
-    padding: 15px 0;
-    width: 100%;
-    border: none;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
+    background: #FFC107; color: #1A1A2E; padding: 15px 0; width: 100%;
+    border: none; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    letter-spacing: 0.5px;
-    margin-top: 15px; 
+    letter-spacing: 0.5px; margin-top: 10px;
 }
 button:hover {
-    background: #FFD740;
-    transform: translateY(-2px);
+    background: #FFD740; transform: translateY(-2px);
     box-shadow: 0 8px 15px rgba(255, 193, 7, 0.3);
 }
 
-/* --- สี Error และ Success --- */
+.input-icon { position: relative; }
+.input-icon svg {
+    position: absolute; top: 50%; left: 18px; transform: translateY(-50%);
+    fill: #FFC107; width: 20px; height: 20px; z-index: 2;
+}
+
+.login-link { margin-top: 25px; font-size: 15px; color: #666; transition: color 0.3s ease; }
+.login-link a { color: #FFC107; font-weight: 600; text-decoration: none; transition: color 0.3s ease; }
+.login-link a:hover { color: #DAA520; text-decoration: underline; }
+
 .error-message {
-    color: #ff3366; /* แดง */
-    background: rgba(255, 51, 102, 0.1);
-    border: 1px solid #ff3366;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: -10px;
-    margin-bottom: 20px;
-    font-size: 0.95em;
-    font-weight: 500;
+    color: #ff3366; background: rgba(255, 51, 102, 0.1); border: 1px solid #ff3366;
+    padding: 10px; border-radius: 5px; margin-top: -10px; margin-bottom: 20px; font-size: 0.95em; font-weight: 500;
 }
 .success-message {
-    color: #27ae60; /* <-- เขียว */
-    background: rgba(39, 174, 96, 0.1);
-    border: 1px solid #27ae60;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: -10px;
-    margin-bottom: 20px;
-    font-size: 0.95em;
-    font-weight: 500;
+    color: #27ae60; background: rgba(39, 174, 96, 0.1); border: 1px solid #27ae60;
+    padding: 10px; border-radius: 5px; margin-top: -10px; margin-bottom: 20px; font-size: 0.95em; font-weight: 500;
 }
 
+/* ▼▼▼ --- Dark Mode Styles --- ▼▼▼ */
+body.dark-mode {
+    background: linear-gradient(-45deg, #1A1A2E, #283049, #1a1a2e, #0f0f1a);
+    background-size: 400% 400%; animation: gradientShift 15s ease infinite; color: #fff;
+}
+@keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-/* --- ไอคอน (สีทอง) --- */
-.input-icon {
-    position: relative;
-}
-.input-icon input {
-    padding-left: 50px; /* ปรับให้เท่ากับ Login */
-}
-.input-icon svg {
-    position: absolute;
-    top: 50%;
-    left: 18px; /* ปรับให้เท่ากับ Login */
-    transform: translateY(-50%); /* แก้ไขให้ตรงกลาง 100% */
-    fill: #FFC107; /* <-- สีไอคอนเป็นสีทอง */
-    width: 20px;
-    height: 20px;
-    opacity: 0.8;
-}
+body.dark-mode .navbar { background: rgba(26, 26, 46, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+body.dark-mode .navbar ul li a { color: #e0e0e0; }
+body.dark-mode .navbar ul li a:hover { color: #ffc107; }
 
-/* --- ลิงก์เข้าสู่ระบบ (สีทอง) --- */
-.login-link { 
-    margin-top: 25px; /* ปรับให้เท่ากับ Login */
-    font-size: 15px;
-    color: #B0B0B0;
+body.dark-mode .register-container {
+    background: rgba(30, 30, 45, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
-.login-link a {
-    color: #FFC107; /* <-- สีทอง */
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 0.3s ease;
+body.dark-mode h2 { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.1); }
+body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode input[type="email"], body.dark-mode input[type="tel"] {
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff;
 }
-.login-link a:hover {
-    color: #FFD740; /* <-- สีทองอ่อนลงเมื่อโฮเวอร์ */
-    text-decoration: underline;
+body.dark-mode input:focus {
+    border-color: #FFC107; background: rgba(255, 193, 7, 0.05); box-shadow: 0 0 12px rgba(255, 193, 7, 0.3);
 }
+body.dark-mode .login-link { color: #B0B0B0; }
+body.dark-mode .login-link a:hover { color: #FFD740; }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .navbar {
-        padding: 0 15px;
-        backdrop-filter: blur(8px); 
-        -webkit-backdrop-filter: blur(8px);
-    }
-    .navbar ul li {
-        margin-left: 10px;
-    }
-    .navbar .logo {
-        font-size: 20px;
-    }
-    .navbar .logo img {
-        height: 50px; 
-    }
-    .register-container {
-        width: 90%;
-        padding: 30px 25px 40px;
-    }
-    h2 {
-        font-size: 28px;
-    }
+    .navbar { padding: 0 15px; }
+    .navbar ul li { margin-left: 15px; }
+    .theme-switch { margin-left: 15px; }
+    .register-container { width: 90%; padding: 30px 25px 40px; }
+}
+
+/* ▼▼▼ --- CSS สำหรับโลโก้ในกล่อง Register (สูตรล่าสุด) --- ▼▼▼ */
+.form-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.register-container img {
+    width: 220px;          /* ความกว้างตามสูตร */
+    height: auto;
+    
+    margin-top: -20px;     /* ดึงขึ้นตามสูตร */
+    margin-bottom: 0px;    /* ลดช่องว่างล่าง */
+    
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
 }
 </style>
 </head>
 <body>
 
+<script>
+    // Theme logic
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+</script>
+
 <nav class="navbar">
     <a href="topup.php" class="logo">
-        <img src="image/logomee-Photoroom.png" alt="Logo Icon"> 
-    </a>
+        <img src="image/Elite Logo black.png" class="logo-black" alt="Elite Logo Black">
+        <img src="image/Elite Logo white.png" class="logo-white" alt="Elite Logo White">
+    </a> 
     <div class="navbar-links">
         <ul class="main-menu">
             <li><a href="topup.php">หน้าแรก</a></li>
@@ -337,10 +308,20 @@ button:hover {
                 <li><a href="login.php" class="login-btn">เข้าสู่ระบบ</a></li>
             <?php endif; ?>
         </ul>
+
+        <label class="theme-switch" for="theme-toggle">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
     </div>
 </nav>
 
 <div class="register-container"> 
+    
+    <div class="form-logo">
+        <img src="image/Elite Logo black.png" class="logo-black" alt="Elite Logo">
+        <img src="image/Elite Logo white.png" class="logo-white" alt="Elite Logo">
+    </div>
     <h2>สมัครสมาชิก</h2>
     
     <?php if ($error): ?>
@@ -394,5 +375,22 @@ button:hover {
         </p>
     </form>
 </div>
+
+<script>
+    const themeToggle = document.getElementById('theme-toggle');
+    if (document.body.classList.contains('dark-mode')) {
+        themeToggle.checked = true;
+    }
+    themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+</script>
+
 </body>
 </html>

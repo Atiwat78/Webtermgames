@@ -2,6 +2,24 @@
 // --- ✨ ต้องมีบรรทัดนี้เสมอเพื่อให้ระบบ Session ทำงาน ---
 session_start();
 
+// ✅ [จุดที่ 1] เพิ่มการเชื่อมต่อฐานข้อมูลและดึงยอดเหรียญ
+require_once 'db.php'; // เรียกใช้ไฟล์ db.php (ต้องมีไฟล์นี้ในโฟลเดอร์เดียวกัน)
+
+$user_points = 0; // ค่าเริ่มต้น
+if (isset($_SESSION['user_id'])) {
+    // ดึงข้อมูล points ล่าสุดจากตาราง users
+    $sql_balance = "SELECT coins FROM users WHERE id = ?";
+    if ($stmt_balance = $conn->prepare($sql_balance)) {
+        $stmt_balance->bind_param("i", $_SESSION['user_id']);
+        $stmt_balance->execute();
+        $result_balance = $stmt_balance->get_result();
+        if ($row_balance = $result_balance->fetch_assoc()) {
+            $user_points = $row_balance['coins'];
+        }
+        $stmt_balance->close();
+    }
+}
+
 // --- ข้อมูลเกม (เหมือนเดิม) ---
 $games = [
     [
@@ -40,7 +58,9 @@ $games = [
 <html lang="th">
 <head>
     <meta charset="UTF-8" />
-    <title>💎 เติมเกม - คุ้มค่า ปลอดภัย</title>
+    
+    <title>Elite</title> 
+    
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -103,7 +123,7 @@ $games = [
 
     /* ปุ่ม Login/Logout */
     .login-btn, .logout-btn {
-        background-color: #ffc107;
+        background-color: #27c791ff;
         color: #333 !important;
         border: none; padding: 8px 18px; border-radius: 20px;
         transition: transform 0.2s ease; font-weight: 600;
@@ -211,8 +231,12 @@ $games = [
         <ul class="user-menu">
         <?php if (isset($_SESSION['user_id'])) : ?>
             <li>
-                <a href="profile.php" style="color: #ffc107; font-weight: 600;"> 
-                    <?php echo htmlspecialchars($_SESSION['username']); ?>
+                <a href="profile.php" style="color: #ffc107; font-weight: 600; display: flex; align-items: center; gap: 8px;"> 
+                    <?php echo htmlspecialchars($_SESSION['username']); ?>,
+                    
+                    <span style="font-weight: 400; color: #28a745; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.9em;">
+                        🪙 <?php echo number_format($user_points); ?> เหรียญ
+                    </span>
                 </a>
             </li>
 
