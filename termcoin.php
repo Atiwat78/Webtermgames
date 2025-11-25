@@ -5,7 +5,7 @@ require_once 'db.php';
 // --- ข้อมูลสำหรับหน้า "เติมเหรียญ" ---
 $current_game_data = [
     'id' => 'coin',
-    'name' => 'เหรียญ (Coins)',
+    'name' => 'เหรียญ (Elite coins)',
     'image' => 'image/coingold.png', 
     'description' => 'เติมเหรียญ/เครดิต เพื่อใช้สำหรับบริการต่างๆ ภายในเว็บไซต์'
 ];
@@ -23,6 +23,12 @@ $current_price_list = [
 <!DOCTYPE html>
 <html lang="th">
 <head>
+        <title>Elite</title> 
+    <link rel="icon" type="image/png" sizes="32x32" href="image/Elite Logo black favni.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="image/Elite Logo black favni.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="image/Elite Logo black favni.pngg">
+    <link rel="icon" type="image/png" sizes="192x192" href="image/Elite Logo black favni.png">
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🪙 เติมเหรียญ/เครดิต - Elite Topup</title>

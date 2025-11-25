@@ -1,339 +1,351 @@
 <?php
-// --- ✨ ต้องมีบรรทัดนี้เสมอเพื่อให้ระบบ Session ทำงาน ---
-session_start();
+// --- ✨ ส่วน PHP บนสุด ---
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'db.php'; 
 
-// ✅ [จุดที่ 1] เพิ่มการเชื่อมต่อฐานข้อมูลและดึงยอดเหรียญ
-require_once 'db.php'; // เรียกใช้ไฟล์ db.php (ต้องมีไฟล์นี้ในโฟลเดอร์เดียวกัน)
+$user_points = 0; 
+$user_role = '';
 
-$user_points = 0; // ค่าเริ่มต้น
+// ส่วนเช็ค User เหมือนเดิม ไม่ต้องแก้
 if (isset($_SESSION['user_id'])) {
-    // ดึงข้อมูล points ล่าสุดจากตาราง users
-    $sql_balance = "SELECT coins FROM users WHERE id = ?";
+    $sql_balance = "SELECT coins, role FROM users WHERE id = ?";
     if ($stmt_balance = $conn->prepare($sql_balance)) {
         $stmt_balance->bind_param("i", $_SESSION['user_id']);
         $stmt_balance->execute();
         $result_balance = $stmt_balance->get_result();
         if ($row_balance = $result_balance->fetch_assoc()) {
-            $user_points = $row_balance['coins'];
+            $user_points = $row_balance['coins']; 
+            $user_role = $row_balance['role'];
         }
         $stmt_balance->close();
     }
 }
 
-// --- ข้อมูลเกม (เหมือนเดิม) ---
-$games = [
+// --- 🎞️ ข้อมูลสไลด์ (Hero Slider) - ธีมนิยาย ---
+// --- 🎞️ ข้อมูลสไลด์ (Hero Slider) - ธีมนิยาย ---
+$slider_images = [
     [
-        'id' => 'freefire',
-        'name' => 'Free Fire',
-        'image' => 'image/free-fire-seeklogo.png', 
-        'background_image' => 'image/Black and Teal Modern Gym & Fitness YouTube Banner.jpg',
+        'title' => 'The Late Shift',
+        'desc' => 'กะดึก... กะหลอน',
+        'image' => 'image/ผีี.jpg', 
+        'novel_id' => 1 // ลิงก์ตรงไปที่หน้ารายละเอียดของเรื่องนี้
     ],
     [
-        'id' => 'rov',
-        'name' => 'ROV',
-        'image' => 'image/idSb4U3QE9_1759416194311.png',
-        'background_image' => 'image/เเวน03.jpg',
+        'title' => 'ROMANTIC LOVE',
+        'desc' => 'นิยายรักหวานซึ้ง กินใจ จนต้องเสียน้ำตา',
+        'image' => 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=1920&auto=format&fit=crop',
+        'novel_id' => 0 // ลิงก์ไปยังหน้าหมวดหมู่รวม (หรือตั้ง ID ที่เหมาะสม)
     ],
     [
-        'id' => 'genshin',
-        'name' => 'Genshin Impact',
-        'image' => 'image/gent.png',
-        'background_image' => 'image/เกนชิน05.jpg',
+        'title' => 'HORROR NIGHT',
+        'desc' => 'รวมเรื่องหลอน ขวัญผวา อ่านแล้วนอนไม่หลับ',
+        'image' => 'https://images.unsplash.com/photo-1505635552518-3448ff116af3?q=80&w=1920&auto=format&fit=crop',
+        'novel_id' => 0 // ลิงก์ไปยังหน้าหมวดหมู่รวม (หรือตั้ง ID ที่เหมาะสม)
+    ]
+];
+
+// --- 📚 ข้อมูลนิยาย (Mock Data) ---
+// *เปลี่ยนชื่อตัวแปรจาก $sheets เป็น $novels เพื่อความเข้าใจง่าย*
+$novels = [
+    [
+        'id' => 1, 
+        'name' => 'กะดึก... กะหลอน (The Late Shift)', 
+        'price' => 0, // ราคาปลดล็อคทั้งเรื่อง หรือต่อตอน
+        'image' => 'image/ผีี.jpg', 
+        'desc' => 'อย่าหันมอง... อย่าสบตา... เพราะกะดึกคืนนี้ พวกเขา กำลังจ้องมองคุณอยู่',
+        'badge' => 'Hot'
+        
     ],
     [
-        'id' => 'valorant',
-        'name' => 'Valorant',
-        'image' => 'https://img.icons8.com/color/96/000000/valorant.png',
-        'background_image' => 'image/สสหสหสดกสห.jpg',
+        'id' => 2, 
+        'name' => 'เล่ห์รักท่านประธาน', 
+        'price' => 300, 
+        'image' => 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'ความรักวุ่นๆ ของเลขาหน้าใส กับท่านประธานจอมเผด็จการ',
+        'badge' => 'New'
     ],
     [
-        'id' => 'roblox',
-        'name' => 'Roblox',
-        'image' => 'image/roblox.png',
-        'background_image' => 'image/robloxxjpg-1.jpg',
+        'id' => 3, 
+        'name' => 'ระบบเทพเจ้าสงคราม', 
+        'price' => 450, 
+        'image' => 'https://images.unsplash.com/photo-1630325667355-087093557e0f?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'ย้อนเวลามาแก้ไขอดีต พร้อมระบบที่ทำให้เขาแข็งแกร่งที่สุดในปฐพี',
+        'badge' => 'Action'
+    ],
+    [
+        'id' => 4, 
+        'name' => 'ปริศนาโรงเรียนหลอน', 
+        'price' => 250, 
+        'image' => 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'อย่าหันหลังกลับ... ถ้าไม่อยากเจอสิ่งที่ซ่อนอยู่ในความมืด',
+        'badge' => 'Horror'
+    ],
+    [
+        'id' => 5, 
+        'name' => 'ข้ามภพสยบมาร', 
+        'price' => 390, 
+        'image' => 'https://images.unsplash.com/photo-1531988042231-d39a9cc12a9a?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'นางร้ายที่ใครๆ ก็เกลียดชัง กลับกลายเป็นวีรสตรีผู้กอบกู้แผ่นดิน',
+        'badge' => 'China'
+    ],
+    [
+        'id' => 6, 
+        'name' => 'My Cat is Human', 
+        'price' => 200, 
+        'image' => 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'เมื่อแมวเหมียวที่เก็บมาเลี้ยง กลายร่างเป็นหนุ่มหล่อในคืนพระจันทร์เต็มดวง',
+        'badge' => 'Yuri/Yaoi'
+    ],
+    [
+        'id' => 7, 
+        'name' => 'The Last Survivor', 
+        'price' => 150, 
+        'image' => 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'วันสิ้นโลกมาถึงแล้ว... และผมคือมนุษย์คนสุดท้าย',
+        'badge' => 'Sci-Fi'
+    ],
+    [
+        'id' => 8, 
+        'name' => 'ปรุงรักฉบับเชฟ', 
+        'price' => 290, 
+        'image' => 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=600&auto=format&fit=crop', 
+        'desc' => 'สูตรอาหารพิชิตใจนายปากแข็ง',
+        'badge' => 'Love'
     ],
 ];
+
+// --- 🏷️ ข้อมูลหมวดหมู่ (Categories Mock Data) ---
+$categories = [
+    ['name' => 'สยองขวัญ', 'icon' => '👻', 'color' => '#880e4f'],
+    ['name' => 'โรแมนติก', 'icon' => '💖', 'color' => '#c2185b'],
+    ['name' => 'แอคชั่น', 'icon' => '💥', 'color' => '#e91e63'],
+    ['name' => 'แฟนตาซี', 'icon' => '✨', 'color' => '#d81b60'],
+    ['name' => 'จีน/กำลังภายใน', 'icon' => '🐉', 'color' => '#ad1457'],
+    ['name' => 'ไซไฟ', 'icon' => '🚀', 'color' => '#9c27b0'],
+    ['name' => 'ตลก/คอมเมดี้', 'icon' => '😂', 'color' => '#6a1b9a'],
+];
+
+
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8" />
-    
-    <title>Elite</title> 
-    
+    <title>Elite Novel - คลังนิยายออนไลน์</title> 
+    <link rel="icon" type="image/png" sizes="32x32" href="image/Elite Logo black favni.png">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <style>
-    /* --- General Body --- */
-    body {
-        font-family: 'Sarabun', sans-serif;
-        background-color: #f4f7f6;
-        margin: 0; padding: 0;
-        color: #333;
-        padding-top: 70px;
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    /* ▼▼▼ --- Navbar (แก้ไขแล้ว) --- ▼▼▼ */
-    .navbar {
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 70px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(12px); 
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center;
-        
-        /* 🎨 [จุดที่ 1] เพิ่มระยะห่างขอบซ้าย-ขวา เป็น 40px (หรือ 50px ถ้าชอบห่างๆ) */
-        padding: 0 40px; 
-        
-        /* 🎨 [จุดที่ 2] สำคัญมาก! ต้องใส่ตัวนี้เพื่อไม่ให้จอกว้างเกิน 100% */
-        box-sizing: border-box;
-        
-        z-index: 1000;
-        transition: background-color 0.3s ease, border-color 0.3s ease;
-    }
-
-    /* การจัดการโลโก้ */
-    .navbar .logo {
-        font-size: 22px; font-weight: 700; 
-        text-decoration: none;
-        display: flex; align-items: center; gap: 12px;
-        margin-left: -30px;
-    }
-    .navbar .logo img { height: 250px; width: auto; padding: 0; }
-
-    /* เมนู */
-    .navbar-links { display: flex; align-items: center; }
-    .navbar ul { list-style: none; display: flex; align-items: center; margin: 0; padding: 0; }
-    .navbar ul li { margin-left: 25px; display: flex; align-items: center; }
-    .navbar ul li a {
-        color: #333; text-decoration: none; font-weight: 500; font-size: 16px;
-        transition: color 0.3s ease;
-    }
-    .navbar ul li a:hover { color: #ffc107; }
-
-    /* ปุ่ม Login/Logout */
-    .login-btn, .logout-btn {
-        background-color: #27c791ff;
-        color: #333 !important;
-        border: none; padding: 8px 18px; border-radius: 20px;
-        transition: transform 0.2s ease; font-weight: 600;
-    }
-    .login-btn:hover, .logout-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
-    }
-
-    /* ▼▼▼ --- Toggle Switch (แก้ไข CSS) --- ▼▼▼ */
-    .theme-switch {
-        position: relative; display: inline-block;
-        width: 50px; height: 26px;
-        
-        /* 🎨 เอา margin-left ออก เพราะ Li จัดการให้แล้ว */
-        margin-left: 0px; 
-        vertical-align: middle;
-    }
-    .theme-switch input { display: none; }
-    .slider {
-        position: absolute; cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #ccc; transition: .4s; border-radius: 34px;
-    }
-    .slider:before {
-        position: absolute; content: "";
-        height: 18px; width: 18px; left: 4px; bottom: 4px;
-        background-color: white; transition: .4s; border-radius: 50%;
-    }
-    input:checked + .slider { background-color: #ffc107; }
-    input:checked + .slider:before { transform: translateX(24px); }
-
-
-    /* ▼▼▼ --- Logic สลับโลโก้ --- ▼▼▼ */
-    .logo-black { display: block; }
-    .logo-white { display: none; }
-    body.dark-mode .logo-black { display: none; }
-    body.dark-mode .logo-white { display: block; }
-
-
-    /* ▼▼▼ --- Dark Mode Styles --- ▼▼▼ */
-    body.dark-mode { background-color: #1a1a2e; color: #e0e0e0; }
-    body.dark-mode .navbar {
-        background: rgba(26, 26, 46, 0.95);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    body.dark-mode .navbar ul li a { color: #e0e0e0; }
-    body.dark-mode .navbar ul li a:hover { color: #ffc107; }
-    body.dark-mode .game-card {
-        background: #283049; color: #fff;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-    body.dark-mode .game-card .game-name { color: #ffc107; }
-    body.dark-mode .section-title { color: #e0e0e0; }
-
-
-    /* --- Hero & Game Slider CSS --- */
-    .hero-slider { width: 100%; height: 300px; position: relative; }
-    .hero-slider .swiper-slide { background-size: cover; background-position: center; }
-    .hero-slider .slide-content { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%; text-decoration: none; color: white; background: rgba(0, 0, 0, 0.4); }
-    .hero-slider h1 { font-size: 48px; font-weight: 700; margin: 0; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
-    .hero-slider p { font-size: 22px; margin: 10px 0 25px; text-shadow: 1px 1px 4px rgba(0,0,0,0.7); }
-    .hero-slider .cta-button { background-color: #ffc107; color: #333; padding: 12px 30px; border-radius: 50px; font-size: 18px; font-weight: 600; transition: transform 0.2s ease; }
-    .hero-slider .cta-button:hover { transform: scale(1.05); }
-    .hero-slider .swiper-button-next, .hero-slider .swiper-button-prev { color: #fff; }
+    body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: #333; padding-top: 70px; transition: background-color 0.3s ease, color 0.3s ease; }
     
-    .container { max-width: 1100px; margin: 50px auto; padding: 0 20px; }
-    .section-title { text-align: center; font-size: 28px; margin-bottom: 30px; color: #5a3577; font-weight: 600; transition: color 0.3s; }
-    .game-slider { width: 100%; height: auto; padding: 10px 0 40px; }
-    .game-slider .swiper-slide { display: flex; justify-content: center; align-items: center; }
+    /* --- Hero Slider --- */
+    .hero-slider { width: 100%; height: 420px; position: relative; } /* เพิ่มความสูงนิดหน่อย */
+    .hero-slider .swiper-slide { background-size: cover; background-position: center; position: relative; }
+    .hero-slider .swiper-slide::before { content:''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8)); }
     
-    .game-card { 
-        width: 95%; height: auto; margin: 0 auto; 
-        background: #fff; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); 
-        padding: 20px; text-align: center; cursor: pointer; 
-        transition: all 0.3s ease; text-decoration: none; color: #333; 
+    .hero-slider .slide-content { 
+        position: relative; z-index: 10;
+        display: flex; flex-direction: column; justify-content: center; align-items: center; 
+        width: 100%; height: 100%; text-align: center; color: white; 
     }
-    .game-card:hover { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12); transform: translateY(-5px); }
-    .game-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 12px; }
-    .game-card .game-name { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #5a3577; transition: color 0.3s; }
+    .hero-slider h1 { font-size: 60px; font-weight: 800; margin: 0; color: #fff; text-shadow: 0 4px 15px rgba(0,0,0,0.6); letter-spacing: 1px; }
+    .hero-slider p { font-size: 22px; margin: 15px 0 30px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); color: #ddd; max-width: 600px; }
+    
+    .hero-slider .cta-button { 
+        background: #e91e63; /* สีชมพูเข้มแบบเว็บนิยาย/การ์ตูน */
+        color: #fff; padding: 12px 40px; border-radius: 50px; 
+        font-size: 18px; font-weight: 700; text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+    }
+    .hero-slider .cta-button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(233, 30, 99, 0.6); background: #c2185b; }
+    
+    .hero-slider .swiper-button-next, .hero-slider .swiper-button-prev { color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    .hero-slider .swiper-pagination-bullet-active { background: #e91e63; }
 
-    .footer { background-color: #343a40; color: #ccc; text-align: center; padding: 15px 20px; margin-top: 350px; }
-    .footer p { margin: 0; font-size: 14px; }
+    /* --- Grid นิยาย --- */
+    .container { max-width: 1200px; margin: 50px auto; padding: 0 20px; }
+    
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+    .section-title { font-size: 28px; color: #333; font-weight: 700; margin: 0; }
+    .see-all { color: #e91e63; text-decoration: none; font-weight: 600; }
+    
+    .novel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; } /* ปรับขนาดการ์ดให้แคบลงเหมาะกับปกหนังสือ */
+    
+    .novel-card { 
+        background: transparent; border-radius: 10px; 
+        transition: transform 0.3s; cursor: pointer; text-decoration: none; color: inherit;
+        display: flex; flex-direction: column;
+    }
+    .novel-card:hover { transform: translateY(-8px); }
+    
+    .novel-cover-wrapper { 
+        width: 100%; padding-top: 150%; /* Aspect Ratio 2:3 (ปกหนังสือ) */
+        position: relative; border-radius: 10px; overflow: hidden; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+    .novel-img { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        object-fit: cover; transition: transform 0.5s; 
+    }
+    .novel-card:hover .novel-img { transform: scale(1.1); } 
+
+    /* Badge มุมภาพ */
+    .novel-badge {
+        position: absolute; top: 10px; right: 10px;
+        background: #e91e63; color: white; padding: 2px 8px;
+        font-size: 10px; font-weight: bold; border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .novel-info { padding: 12px 5px; }
+    .novel-name { font-size: 16px; font-weight: 700; margin-bottom: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 44px;}
+    .novel-desc { font-size: 12px; color: #777; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    
+    .novel-price-row { 
+        display: flex; justify-content: space-between; align-items: center; 
+    }
+    .coin-tag { 
+        font-size: 16px; font-weight: bold; color: #DAA520; 
+        display: flex; align-items: center; gap: 4px; 
+    }
+    .read-btn {
+        font-size: 12px; color: #e91e63; border: 1px solid #e91e63; padding: 2px 8px; border-radius: 20px;
+    }
+
+    /* Dark Mode */
+    body.dark-mode { background-color: #121212; color: #eee; }
+    body.dark-mode .section-title { color: #fff; }
+    body.dark-mode .section-header { border-bottom-color: #333; }
+    body.dark-mode .novel-name { color: #fff; }
+    body.dark-mode .novel-desc { color: #aaa; }
+    
+    .footer { background-color: #1a1a1a; color: #666; text-align: center; padding: 40px; margin-top: 80px; border-top: 1px solid #333; }
+.hero-slider .swiper-button-next, 
+.hero-slider .swiper-button-prev { 
+    color: #fff; /* ลูกศรสีขาว */
+    background-color: transparent !important; /* <<< แก้ไข: บังคับให้พื้นหลังเป็นโปร่งใส */
+    padding: 0; /* ลบ padding ส่วนเกิน */
+    width: 30px; /* กำหนดความกว้างมาตรฐาน (ถ้าไม่กำหนด Swiper อาจมีขนาดใหญ่เอง) */
+    height: 30px; /* กำหนดความสูงมาตรฐาน */
+    transition: all 0.3s;
+    z-index: 20; 
+}
+
+.hero-slider .swiper-button-next:hover, 
+.hero-slider .swiper-button-prev:hover {
+    background-color: transparent !important; /* <<< แก้ไข: บังคับให้โปร่งใสแม้ตอนเมาส์ชี้ */
+    opacity: 0.8; /* ลดความทึบลงเล็กน้อยตอน hover เพื่อให้มีลูกเล่น */
+}
 </style>
 </head>
 <body>
 
-<script>
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-</script>
-
-<nav class="navbar">
-    <a href="topup.php" class="logo">
-        <img src="image/Elite Logo black.png" class="logo-black" alt="Elite Logo Black">
-        <img src="image/Elite Logo white.png" class="logo-white" alt="Elite Logo White">
-    </a> 
-    <div class="navbar-links">
-        <ul class="main-menu">
-            <li><a href="">หน้าแรก</a></li>
-            <li><a href="termcoin.php">เติมเหรียญ</a></li>
-        </ul>
-        
-        <ul class="user-menu">
-        <?php if (isset($_SESSION['user_id'])) : ?>
-            <li>
-                <a href="profile.php" style="color: #ffc107; font-weight: 600; display: flex; align-items: center; gap: 8px;"> 
-                    <?php echo htmlspecialchars($_SESSION['username']); ?>,
-                    
-                    <span style="font-weight: 400; color: #28a745; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.9em;">
-                        🪙 <?php echo number_format($user_points); ?> เหรียญ
-                    </span>
-                </a>
-            </li>
-
-            <li>
-                <label class="theme-switch" for="theme-toggle">
-                    <input type="checkbox" id="theme-toggle">
-                    <span class="slider"></span>
-                </label>
-            </li>
-
-            <li><a href="logout.php" class="logout-btn">ออกจากระบบ</a></li>
-
-        <?php else : ?>
-            <li>
-                <label class="theme-switch" for="theme-toggle">
-                    <input type="checkbox" id="theme-toggle">
-                    <span class="slider"></span>
-                </label>
-            </li>
-            <li><a href="login.php" class="login-btn">เข้าสู่ระบบ</a></li>
-        <?php endif; ?>
-        </ul>
-
-        </div>
-</nav>
-
+<?php include 'navbar.php'; ?>
 
 <div class="swiper hero-slider">
     <div class="swiper-wrapper">
-        <?php foreach ($games as $game) : ?>
-            <?php $position = ($game['id'] === 'freefire') ? 'left center' : 'center'; ?>
-            <div class="swiper-slide" style="background-image: url('<?php echo htmlspecialchars($game['background_image']); ?>'); background-position: <?php echo $position; ?>;">
-                <a href="<?php echo htmlspecialchars($game['id']); ?>.php" class="slide-content">
-                    <h1><?php echo htmlspecialchars($game['name']); ?></h1>
-                    <p>บริการเติมเกมชั้นนำ รวดเร็วทันใจ</p>
-                    <span class="cta-button">👉 เติมเลย!</span>
+        <?php foreach ($slider_images as $slide) : ?>
+            <div class="swiper-slide" style="background-image: url('<?php echo $slide['image']; ?>');">
+                
+                <a href="novel_detail.php?id=<?php echo $slide['novel_id']; ?>" style="
+                    position: absolute; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    z-index: 10; 
+                    text-decoration: none;
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center; 
+                    align-items: center;
+                ">
+                
+                    <div class="slide-content">
+                        <h1><?php echo $slide['title']; ?></h1>
+                        <p><?php echo $slide['desc']; ?></p>
+                        
+                        <span class="cta-button">เริ่มอ่านเลย</span> 
+                    </div>
                 </a>
+                
             </div>
         <?php endforeach; ?>
     </div>
+    
     <div class="swiper-button-prev"></div>
     <div class="swiper-button-next"></div>
+    
     <div class="swiper-pagination"></div>
 </div>
+    </div>
 
-<div class="container">
-    <h2 class="section-title">เกมยอดนิยม</h2>
-    <div class="swiper game-slider">
-        <div class="swiper-wrapper">
-            <?php foreach ($games as $game) : ?>
-                <div class="swiper-slide">
-                    <a href="<?php echo htmlspecialchars($game['id']); ?>.php" class="game-card">
-                        <img src="<?php echo htmlspecialchars($game['image']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" />
-                        <div class="game-name"><?php echo htmlspecialchars($game['name']); ?></div>
-                    </a>
+<div class="container" id="novel-section">
+    <div class="section-header">
+        <h2 class="section-title">🔥 นิยายมาแรง (Hot Novels)</h2>
+        <a href="#" class="see-all">ดูทั้งหมด ></a>
+    </div>
+    
+    <div class="novel-grid">
+        <?php foreach ($novels as $novel) : ?>
+            <a href="novel_detail.php?id=<?php echo $novel['id']; ?>" class="novel-card">
+                <div class="novel-cover-wrapper">
+                    <img src="<?php echo $novel['image']; ?>" class="novel-img" alt="<?php echo $novel['name']; ?>">
+                    <?php if(isset($novel['badge'])): ?>
+                        <div class="novel-badge"><?php echo $novel['badge']; ?></div>
+                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-        </div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-button-next"></div>
+                <div class="novel-info">
+                    <div class="novel-name"><?php echo $novel['name']; ?></div>
+                    <div class="novel-desc"><?php echo $novel['desc']; ?></div>
+                    <div class="novel-price-row">
+                        <div class="coin-tag" style="color: <?php echo $novel['price'] == 0 ? '#10b981' : '#DAA520'; ?>;">
+    <?php if ($novel['price'] == 0) : ?>
+        ฟรี
+    <?php else : ?>
+        <?php echo $novel['price']; ?> 
+        <img src="image/coingold.png" style="width: 16px; height: 16px;">
+    <?php endif; ?>
+</div>
+                        <span class="read-btn">อ่าน</span>
+                    </div>
+                </div>
+            </a>
+        <?php endforeach; ?>
     </div>
 </div>
 
-<div class="footer">
-    <p>&copy; <?php echo date('Y'); ?> ntyztermgame. สงวนลิขสิทธิ์.</p>
-</div>
+<div class="footer"><p>&copy; 2025 Elite Novel. อ่านนิยายออนไลน์ สนุกได้ทุกที่.</p></div>
 
 <script>
+    // Theme Sync (เหมือนเดิม)
     const themeToggle = document.getElementById('theme-toggle');
-    if (document.body.classList.contains('dark-mode')) {
-        themeToggle.checked = true;
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+    if (themeToggle && document.body.classList.contains('dark-mode')) themeToggle.checked = true;
+    
+    if(themeToggle){
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-mode'); localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode'); localStorage.setItem('theme', 'light');
+            }
+        });
     }
-    themeToggle.addEventListener('change', function() {
-        if (this.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    });
 
     const heroSwiper = new Swiper('.hero-slider', {
         loop: true,
-        autoplay: { delay: 4000, disableOnInteraction: false },
-        navigation: { nextEl: '.hero-slider .swiper-button-next', prevEl: '.hero-slider .swiper-button-prev' },
-        pagination: { el: '.hero-slider .swiper-pagination', clickable: true },
-    });
-    const gameSwiper = new Swiper('.game-slider', {
-        loop: true,
-        spaceBetween: 20,
-        slidesPerView: 2,
-        breakpoints: {
-            768: { slidesPerView: 4 },
-            1024: { slidesPerView: 5 }
-        },
-        navigation: { nextEl: '.game-slider .swiper-button-next', prevEl: '.game-slider .swiper-button-prev' },
+        speed: 1000, 
+        effect: 'fade',
+        fadeEffect: { crossFade: true },
+        autoplay: { delay: 2500, disableOnInteraction: false },
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        pagination: { el: '.swiper-pagination', clickable: true },
     });
 </script>
 
