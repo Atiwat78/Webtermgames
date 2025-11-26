@@ -8,15 +8,15 @@ $novels = [
         'id' => 1, 
         'name' => 'กะดึก... กะหลอน (The Late Shift)', 
         'price' => 0,
-        'image' => 'image/ผีี.jpg', 
+        'image' => 'image/ghost1.png', 
         'desc' => 'อย่าหันมอง... อย่าสบตา... เพราะกะดึกคืนนี้ พวกเขา กำลังจ้องมองคุณอยู่ใกล้แค่ลมหายใจรดต้นคอ เรื่องราวสุดหลอนของพนักงานกะดึกที่ชีวิตต้องเปลี่ยนไปเพราะ...',
         'badge' => 'Hot'
     ],
     [
         'id' => 2, 
-        'name' => 'เล่ห์รักท่านประธาน', 
-        'price' => 300, 
-        'image' => 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop', 
+        'name' => 'เพื่อนในจินตนาการ (The Imaginary Friend)', 
+        'price' => 0, 
+        'image' => 'image/ghost2.png', 
         'desc' => 'ความรักวุ่นๆ ของเลขาหน้าใส กับท่านประธานจอมเผด็จการ',
         'badge' => 'New'
     ],
@@ -48,7 +48,7 @@ $novels = [
         'id' => 6, 
         'name' => 'My Cat is Human', 
         'price' => 200, 
-        'image' => 'https://images.unsplash.com/photo-1574158622682-e40e69881006?q=80&w=600&auto=format&fit=crop', 
+        'image' => 'image/เเมววว.jpg', 
         'desc' => 'เมื่อแมวเหมียวที่เก็บมาเลี้ยง กลายร่างเป็นหนุ่มหล่อในคืนพระจันทร์เต็มดวง',
         'badge' => 'Yuri/Yaoi'
     ],

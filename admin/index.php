@@ -46,7 +46,22 @@
         </div>
     </div>
 
-</div>
+    <div class="card" style="flex: 1; min-width: 250px; border-top: 4px solid #e11d48;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <p style="margin:0; color:#64748b;">นิยายในระบบ</p>
+                <?php
+                    $q4 = $conn->query("SELECT COUNT(*) as c FROM stories");
+                    $story_count = ($q4) ? $q4->fetch_assoc()['c'] : 0;
+                    echo "<h1 style='margin:5px 0; font-size:36px; color:#e11d48;'>" . $story_count . "</h1>";
+                ?>
+                <a href="manage_novels.php" style="font-size:13px; text-decoration:none; color:#e11d48; font-weight:bold;">
+                    ไปจัดการ / เพิ่มตอน &rarr;
+                </a>
+            </div>
+            <i class="fas fa-book-dead" style="font-size: 40px; color: #fda4af;"></i>
+        </div>
+    </div>
 
-</div> </div> </body>
+</div> </div> </div> </body>
 </html>

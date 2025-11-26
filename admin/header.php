@@ -2,6 +2,7 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+// เชื่อมต่อฐานข้อมูล (ใช้ ../db.php เพราะไฟล์นี้อยู่ใน folder admin)
 require_once '../db.php'; 
 
 // เช็คสิทธิ์ Admin
@@ -143,14 +144,32 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
         <i class="fas fa-gem" style="margin-right: 10px;"></i> ELITE ADMIN
     </div>
     
-<div class="sidebar-menu">
+    <div class="sidebar-menu">
         <a href="index.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
             <i class="fas fa-chart-pie"></i> &nbsp;ภาพรวมระบบ
         </a>
+
         <a href="manage_topup.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'manage_topup.php' ? 'active' : ''; ?>">
             <i class="fas fa-wallet"></i> &nbsp;อนุมัติเติมเงิน
         </a>
         
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 20px;"></div>
+        <small style="padding: 0 25px; color: #64748b; text-transform: uppercase; font-size: 12px; font-weight: bold;">เมนูนิยาย</small>
+
+        <a href="manage_stories.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'manage_stories.php' || basename($_SERVER['PHP_SELF']) == 'add_story.php' ? 'active' : ''; ?>">
+            <i class="fas fa-book"></i> &nbsp;จัดการเรื่อง/หน้าปก
+        </a>
+
+        <a href="manage_chapters.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'manage_chapters.php' ? 'active' : ''; ?>">
+            <i class="fas fa-list-ul"></i> &nbsp;จัดการตอนเนื้อหา
+        </a>
+
+        <a href="add_chapter.php" class="menu-item <?php echo basename($_SERVER['PHP_SELF']) == 'add_chapter.php' ? 'active' : ''; ?>" style="color: #fda4af;">
+            <i class="fas fa-plus-circle"></i> &nbsp;เพิ่มตอนใหม่ด่วน
+        </a>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 20px;"></div>
+
         <a href="../topup.php" class="menu-item" target="_blank">
             <i class="fas fa-external-link-alt"></i> &nbsp;ไปหน้าเว็บไซต์หลัก
         </a>
@@ -171,6 +190,9 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role
                 $page = basename($_SERVER['PHP_SELF']);
                 if($page == 'index.php') echo 'Dashboard (ภาพรวม)';
                 elseif($page == 'manage_topup.php') echo 'จัดการการเติมเงิน';
+                elseif($page == 'manage_chapters.php') echo 'จัดการตอนนิยาย';
+                elseif($page == 'add_chapter.php') echo 'เพิ่มตอนนิยายใหม่';
+                elseif($page == 'edit_chapter.php') echo 'แก้ไขตอนนิยาย';
                 else echo 'Admin Panel';
             ?>
         </div>
